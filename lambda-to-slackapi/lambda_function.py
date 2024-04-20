@@ -17,9 +17,8 @@ def lambda_handler(event, context):
 
 def send_slack_message(message):
     slack_token = os.environ["slack_token"]
-    slack_channel = "C06STLJV7S5"  # Replace with your Slack channel name or ID
-    slack_url = f"https://hooks.slack.com/services/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"
-    # slack_url = f"https://hooks.slack.com/services/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"
+    slack_channel = "slack_channel"  # Replace with your Slack channel name or ID
+    slack_url = f"slack_url"
     
     headers = {
         "Authorization": f"Bearer {slack_token}",
