@@ -17,6 +17,10 @@ def lambda_handler(event, context):
         
         # Fetch data from the API
         response = requests.get(api_url)
+        
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch data from API: {response.status_code}")
+        
         data = response.json()
         
         time_stamp = data['timestamp']
@@ -50,7 +54,8 @@ def lambda_handler(event, context):
         cursor.close()
         conn.close()
         
-        invoke_another_lambda()
+        message = "Data successfully inserted into Database"
+        invoke_another_lambda(message)
         
         return {
             'statusCode': 200,
@@ -58,12 +63,19 @@ def lambda_handler(event, context):
         }
     
     except Exception as e:
+        error_message = str(e)  # Get the error message
+        print(f"Error: {error_message}")
+        
+        # If API fetching fails, invoke another Lambda function
+        invoke_another_lambda(error_message)
+        
         return {
             'statusCode': 500,
-            'body': json.dumps('Error inserting data into RDS: {}'.format(str(e)))
+            'body': json.dumps(f'Error: {str(e)}')
         }
+    
         
-def invoke_another_lambda():
+def invoke_another_lambda(message=None):
     # Create Lambda client
     try:
         # Create Lambda client
@@ -74,7 +86,8 @@ def invoke_another_lambda():
 
         # Construct payload if needed
         payload = {
-            "alarm_triggered": True
+            "alarm_triggered": True,
+            "message": message
         }
 
         # Invoke the Lambda function
@@ -85,6 +98,5 @@ def invoke_another_lambda():
         )
 
         # Optionally, you can handle the response
-        # print(response)
     except Exception as e:
         print("Error invoking lambda: ", str(e))
